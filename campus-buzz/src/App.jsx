@@ -11,8 +11,7 @@ import CreateEventPage from './pages/CreateEventPage';
 import ProfilePage from './pages/ProfilePage';
 import AuthPage from './pages/AuthPage';
 import CalendarPage from './pages/CalendarPage';
-import EventDetailPage from './pages/EventDetailPage';
-import RegistrationPage from './pages/RegistrationPage';
+import EventDetailPage from './pages/EventDetailPage'; 
 
 // Import your reusable components
 import Header from './components/Header';
@@ -56,7 +55,6 @@ function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Route>
       <Route path="/login" element={<AuthPage />} />
-      <Route path="/register" element={<RegistrationPage />} />
     </Routes>
   );
 }
