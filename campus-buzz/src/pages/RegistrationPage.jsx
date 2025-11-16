@@ -1,131 +1,122 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-const RegistrationPage = () => {
+function RegistrationPage() {
   const [formData, setFormData] = useState({
-    username: '',
+    name: '',
+    year: '',
+    course: '',
     email: '',
-    password: '',
-    confirmPassword: '',
+    phone: '',
   });
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [event, setEvent] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const location = useLocation();
   const navigate = useNavigate();
+  const eventId = new URLSearchParams(location.search).get('eventId');
+
+  useEffect(() => {
+    const fetchEvent = async () => {
+      if (eventId) {
+        try {
+          const response = await fetch(`http://localhost:3001/events/${eventId}`);
+          const eventData = await response.json();
+          setEvent(eventData);
+        } catch (error) {
+          console.error('Failed to fetch event details:', error);
+        }
+      }
+    };
+    fetchEvent();
+  }, [eventId]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { id, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [id]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
+    const registrationData = { ...formData, eventId: parseInt(eventId, 10) };
     try {
-      const response = await fetch('http://localhost:3001/users', {
+      const response = await fetch('http://localhost:3001/registrations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-        }),
+        body: JSON.stringify(registrationData),
       });
+
       if (response.ok) {
-        setSuccess('Registration successful! A confirmation has been logged to the console.');
-        // SIMULATED: In a real application, you would send a confirmation email here.
-        console.log(`Email confirmation sent to ${formData.email}`);
-        setTimeout(() => navigate('/login'), 2000);
+        setShowSuccess(true);
+        console.log(`Sending registration confirmation email to ${formData.email} for event: ${event.title}`);
+        setTimeout(() => {
+          navigate('/');
+        }, 3000);
       } else {
-        setError('Registration failed. Please try again.');
+        alert('Registration failed. Please try again.');
       }
     } catch (error) {
-      setError('An error occurred. Please try again later.');
+      console.error('Registration error:', error);
+      alert('An error occurred during registration.');
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center mb-6">Create an Account</h2>
-        <form onSubmit={handleSubmit}>
-          {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-          {success && <p className="text-green-500 text-center mb-4">{success}</p>}
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="username">
-              Username
-            </label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="email">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="password">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg"
-              required
-            />
-          </div>
-          <div className="mb-6">
-            <label className="block text-gray-700 mb-2" htmlFor="confirmPassword">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-purple-600 text-white py-2 rounded-lg font-medium hover:bg-purple-700"
-          >
-            Register
-          </button>
-        </form>
-        <p className="text-center mt-4">
-          Already have an account?{' '}
-          <Link to="/login" className="text-purple-600">
-            Login
-          </Link>
-        </p>
+  if (!event) {
+    return (
+      <div className="text-center p-20 min-h-screen">
+        <h1 className="text-4xl font-bold">Loading event...</h1>
       </div>
+    );
+  }
+
+  return (
+    <div className="bg-gray-100 min-h-screen py-12">
+      <section className="max-w-4xl mx-auto bg-white rounded-2xl shadow-md p-8">
+        <h2 className="text-3xl font-bold text-gray-800 mb-2 text-center">Register for: {event.title}</h2>
+        <p className="text-center text-gray-600 mb-6">{event.description}</p>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="name" className="block font-semibold text-gray-700 mb-2">Full Name</label>
+              <input id="name" type="text" placeholder="Enter your full name" value={formData.name} onChange={handleChange}
+                     className="w-full border rounded-lg px-4 py-2" required />
+            </div>
+            <div>
+              <label htmlFor="email" className="block font-semibold text-gray-700 mb-2">Email Address</label>
+              <input id="email" type="email" placeholder="Enter your email" value={formData.email} onChange={handleChange}
+                     className="w-full border rounded-lg px-4 py-2" required />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="year" className="block font-semibold text-gray-700 mb-2">Year</label>
+              <input id="year" type="text" placeholder="e.g., 3rd Year" value={formData.year} onChange={handleChange}
+                     className="w-full border rounded-lg px-4 py-2" required />
+            </div>
+            <div>
+              <label htmlFor="course" className="block font-semibold text-gray-700 mb-2">Course</label>
+              <input id="course" type="text" placeholder="e.g., Computer Science" value={formData.course} onChange={handleChange}
+                     className="w-full border rounded-lg px-4 py-2" required />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="phone" className="block font-semibold text-gray-700 mb-2">Phone Number</label>
+            <input id="phone" type="tel" placeholder="Enter your phone number" value={formData.phone} onChange={handleChange}
+                   className="w-full border rounded-lg px-4 py-2" required />
+          </div>
+          <div className="text-center">
+            <button type="submit" className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 font-medium">Register for Event</button>
+          </div>
+        </form>
+        {showSuccess && (
+          <p className="text-center text-green-600 font-semibold mt-6">
+            ✅ Registration successful! A confirmation email has been sent. Redirecting...
+          </p>
+        )}
+      </section>
     </div>
   );
-};
+}
 
 export default RegistrationPage;

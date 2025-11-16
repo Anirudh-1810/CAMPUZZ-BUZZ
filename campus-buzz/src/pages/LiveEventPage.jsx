@@ -4,10 +4,7 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faList, faTableCellsLarge, faCalendar, faSort, faUsers, 
-  faClock, faUserTie, faDollarSign, faShare, faBookmark,
-  faFilterCircleXmark, faMagnifyingGlass, faChevronLeft, faChevronRight,
-  faLaptopCode, faChartLine, faPalette, faGraduationCap, faHeart, faMusic
+  faClock, faUsers, faBookmark, faShare
 } from '@fortawesome/free-solid-svg-icons';
 
 // --- Reusable EventCard Component ---
@@ -101,8 +98,6 @@ const eventsData = [
 ];
 
 function LiveEventPage() {
-  const [view, setView] = useState('list');
-
   return (
     <>
       {/* Hero Section */}

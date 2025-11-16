@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// Helper function to format the new event
 const formatNewEvent = (formData) => {
   const dateObj = new Date(formData.date);
-  const day = dateObj.getDate() + 1; // JS date objects can be tricky with timezones
+  const day = dateObj.getDate() + 1;
   const month = dateObj.toLocaleString('default', { month: 'short' }).toUpperCase();
   
   const categoryColors = {
@@ -18,7 +17,7 @@ const formatNewEvent = (formData) => {
   const colors = categoryColors[formData.category] || categoryColors['Other'];
 
   return {
-    id: Date.now(), // Unique ID
+    id: Date.now(),
     date: day,
     month: month,
     time: formData.time,
@@ -29,8 +28,9 @@ const formatNewEvent = (formData) => {
     tags: [{ name: colors.tag, color: `bg-${colors.color}-100 text-${colors.color}-800` }],
     title: formData.title,
     description: formData.description,
-    location: formData.location, // We'll add this field
-    attending: 0, // Starts with 0
+    location: formData.location,
+    imageUrl: formData.imageUrl,
+    attending: 0,
     duration: 'N/A',
     buttonText: 'View Details',
     buttonColor: `bg-${colors.color}-500`,
@@ -46,6 +46,7 @@ function CreateEventPage() {
     time: '',
     location: '',
     category: '',
+    imageUrl: '',
   });
   const [errors, setErrors] = useState({});
   const [showSuccess, setShowSuccess] = useState(false);
@@ -57,6 +58,12 @@ function CreateEventPage() {
     if (errors[id]) {
       setErrors(prevErrors => ({ ...prevErrors, [id]: null }));
     }
+  };
+
+  const handleImageChange = () => {
+    // Simulate image upload by using a placeholder URL
+    const placeholderImageUrl = 'https://via.placeholder.com/300x200.png?text=Event+Image';
+    setFormData(prevData => ({ ...prevData, imageUrl: placeholderImageUrl }));
   };
 
   const validate = () => {
@@ -71,28 +78,33 @@ function CreateEventPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
-      // 1. Format the new event
       const newEvent = formatNewEvent(formData);
+      try {
+        const response = await fetch('http://localhost:3001/events', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newEvent),
+        });
 
-      // 2. Get existing events from localStorage (or create an empty list)
-      const allEvents = JSON.parse(localStorage.getItem('eventsList')) || [];
-
-      // 3. Add the new event to the list
-      allEvents.push(newEvent);
-
-      // 4. Save the updated list back to localStorage
-      localStorage.setItem('eventsList', JSON.stringify(allEvents));
-
-      // 5. Show success and redirect
-      setShowSuccess(true);
-      setTimeout(() => {
-        navigate('/events'); // Navigate to the events page
-      }, 2000);
+        if (response.ok) {
+          setShowSuccess(true);
+          setTimeout(() => {
+            navigate('/events');
+          }, 2000);
+        } else {
+          alert('Failed to create event. Please try again.');
+        }
+      } catch (error) {
+        console.error('Create event error:', error);
+        alert('An error occurred while creating the event.');
+      }
     } else {
-      alert('⚠️ Please fill in all required fields.');
+      alert('Please fill in all required fields.');
     }
   };
   
@@ -102,7 +114,7 @@ function CreateEventPage() {
     <div className="bg-gray-100 min-h-screen">
       <section className="max-w-4xl mx-auto my-12 bg-white rounded-2xl shadow-md p-8">
         <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Create a New Event</h2>
-        <form id="eventForm" className="space-y-6" onSubmit={handleSubmit} noValidate>
+        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
           <div>
             <label htmlFor="title" className="block font-semibold text-gray-700 mb-2">Event Title</label>
             <input id="title" type="text" placeholder="Enter event title" value={formData.title} onChange={handleChange}
@@ -142,12 +154,16 @@ function CreateEventPage() {
               <option>Other</option>
             </select>
           </div>
+          <div>
+            <label htmlFor="image" className="block font-semibold text-gray-700 mb-2">Event Image</label>
+            <input id="image" type="file" onChange={handleImageChange} className="w-full border rounded-lg px-4 py-2" />
+          </div>
           <div className="text-center">
             <button type="submit" className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 font-medium">Create Event</button>
           </div>
         </form>
         {showSuccess && (
-          <p id="successMessage" className="text-center text-green-600 font-semibold mt-6">
+          <p className="text-center text-green-600 font-semibold mt-6">
             ✅ Event created successfully! Redirecting...
           </p>
         )}

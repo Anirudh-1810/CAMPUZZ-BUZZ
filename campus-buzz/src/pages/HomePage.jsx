@@ -1,20 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faCalendarCheck, faMagnifyingGlass, faUsers, 
+  faUsers,
   faCode, faPalette, faDumbbell, faMusic 
 } from '@fortawesome/free-solid-svg-icons';
 
-// Note: Your index.html and html2.html were very similar. 
-// I'm using the content from html2.html as it seems like a richer homepage.
-
 function HomePage() {
+  const [latestEvents, setLatestEvents] = useState([]);
   const navigate = useNavigate();
 
-  // Replaces the JavaScript functions
+  useEffect(() => {
+    const fetchLatestEvents = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/events?_sort=id&_order=desc&_limit=4');
+        const events = await response.json();
+        setLatestEvents(events);
+      } catch (error) {
+        console.error('Failed to fetch latest events:', error);
+      }
+    };
+
+    fetchLatestEvents();
+  }, []);
+
   const joinClub = (clubId) => {
-    navigate(`/club/${clubId}`); // Navigate to the club detail page
+    navigate(`/club/${clubId}`);
   };
 
   const scrollToSection = (sectionId) => {
@@ -144,44 +155,18 @@ function HomePage() {
             <h2 className="text-4xl font-bold text-gray-800 mb-6">Upcoming Events</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
-              <div className="p-5">
-                <h3 className="text-lg font-bold text-gray-800 mb-2">Innovation Science Fair</h3>
-                <p className="text-gray-600 text-sm mb-3">Showcase cutting-edge research projects</p>
-                <Link to="/events" className="w-full text-center block bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg text-sm font-semibold transition-colors">
-                  Register Now
-                </Link>
+            {latestEvents.map((event) => (
+              <div key={event.id} className="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                <img src={event.imageUrl || 'https://via.placeholder.com/300x200.png?text=Event'} alt={event.title} className="w-full h-48 object-cover" />
+                <div className="p-5">
+                  <h3 className="text-lg font-bold text-gray-800 mb-2">{event.title}</h3>
+                  <p className="text-gray-600 text-sm mb-3">{event.description}</p>
+                  <Link to={`/register?eventId=${event.id}`} className="w-full text-center block bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg text-sm font-semibold transition-colors">
+                    Register Now
+                  </Link>
+                </div>
               </div>
-            </div>
-            {/* Add more upcoming event cards */}
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
-              <div className="p-5">
-                <h3 className="text-lg font-bold text-gray-800 mb-2">Innovation Science Fair</h3>
-                <p className="text-gray-600 text-sm mb-3">Showcase cutting-edge research projects</p>
-                <Link to="/events" className="w-full text-center block bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg text-sm font-semibold transition-colors">
-                  Register Now
-                </Link>
-              </div>
-            </div>
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
-              <div className="p-5">
-                <h3 className="text-lg font-bold text-gray-800 mb-2">Innovation Science Fair</h3>
-                <p className="text-gray-600 text-sm mb-3">Showcase cutting-edge research projects</p>
-                <Link to="/events" className="w-full text-center block bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg text-sm font-semibold transition-colors">
-                  Register Now
-                </Link>
-              </div>
-            </div>
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
-              <div className="p-5">
-                <h3 className="text-lg font-bold text-gray-800 mb-2">Innovation Science Fair</h3>
-                <p className="text-gray-600 text-sm mb-3">Showcase cutting-edge research projects</p>
-                <Link to="/events" className="w-full text-center block bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg text-sm font-semibold transition-colors">
-                  Register Now
-                </Link>
-              </div>
-            </div>
-            
+            ))}
           </div>
         </div>
       </section>

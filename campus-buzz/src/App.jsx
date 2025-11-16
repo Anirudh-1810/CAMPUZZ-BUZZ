@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Outlet, Link } from 'react-router-dom';
 
 // Import all your page components
@@ -19,9 +19,9 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ChatBot from './components/ChatBot';
 
-const AppLayout = () => (
+const AppLayout = ({ user, onLogout }) => (
   <>
-    <Header />
+    <Header user={user} onLogout={onLogout} />
     <main>
       <Outlet />
     </main>
@@ -41,9 +41,28 @@ const NotFoundPage = () => (
 );
 
 function App() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('campusbuzz_user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const handleLogin = (userData) => {
+    localStorage.setItem('campusbuzz_user', JSON.stringify(userData));
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('campusbuzz_user');
+    setUser(null);
+  };
+
   return (
     <Routes>
-      <Route element={<AppLayout />}>
+      <Route element={<AppLayout user={user} onLogout={handleLogout} />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/event/:eventId" element={<EventDetailPage />} /> 
@@ -55,7 +74,8 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
-      <Route path="/login" element={<AuthPage />} />
+      <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />
+      <Route path="/login" element={<AuthPage onLogin={handleLogin} />} />
       <Route path="/register" element={<RegistrationPage />} />
     </Routes>
   );

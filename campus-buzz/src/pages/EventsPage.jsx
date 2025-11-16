@@ -2,10 +2,9 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom'; // <-- Import Link
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-    faList, faTableCellsLarge, faCalendar, faSort, faUsers, 
-    faClock, faUserTie, faDollarSign, faShare, faBookmark,
-    faFilterCircleXmark, faMagnifyingGlass, faChevronLeft, faChevronRight,
-    faLaptopCode, faChartLine, faPalette, faGraduationCap, faHeart, faMusic,
+    faUsers,
+    faBookmark,
+    faMagnifyingGlass,
     faMapPin  // <-- ADD THIS ICON
   } from '@fortawesome/free-solid-svg-icons';
 
@@ -99,7 +98,6 @@ const EventCard = ({ event, onRegister }) => {
 
 // --- Main EventsPage Component ---
 function EventsPage() {
-  const [view, setView] = useState('list');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [searchFilter, setSearchFilter] = useState('');
   

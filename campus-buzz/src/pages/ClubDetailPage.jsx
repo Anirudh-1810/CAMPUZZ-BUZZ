@@ -5,7 +5,7 @@ import {
   faCode, faPalette, faDumbbell, faMusic,
   faUsers, faCalendar, faStar, faInfoCircle,
   faCheckCircle, faGift, faGraduationCap, faNetworkWired,
-  faBriefcase, faCertificate, faCalendarAlt, faUserTie,
+  faBriefcase, faCalendarAlt, faUserTie,
   faUserPlus, faPaperPlane
 } from '@fortawesome/free-solid-svg-icons';
 

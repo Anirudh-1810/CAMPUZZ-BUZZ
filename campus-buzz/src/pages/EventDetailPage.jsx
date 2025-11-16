@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendar, faClock, faMapPin, faUsers, faTag } from '@fortawesome/free-solid-svg-icons';
+import { faCalendar, faClock, faMapPin, faUsers } from '@fortawesome/free-solid-svg-icons';
 
 function EventDetailPage() {
   const { eventId } = useParams();
@@ -56,7 +56,7 @@ function EventDetailPage() {
       } else {
         setMessage('Registration failed. Please try again.');
       }
-    } catch (error) {
+    } catch {
       setMessage('An error occurred. Please try again later.');
     }
   };

@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; // <-- THE FIX IS HERE
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faPlus, faCompass, faChevronLeft, faChevronRight, 
-  faTableCellsLarge, faList, faCode, faPersonRunning, 
+  faPlus, faCode, faPersonRunning,
   faBook, faUtensils, faCamera, faBriefcase, faMusic, 
   faGamepad, faHeart, faUsers, faCalendar, faLocationDot
 } from '@fortawesome/free-solid-svg-icons';

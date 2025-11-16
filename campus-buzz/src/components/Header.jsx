@@ -1,13 +1,20 @@
 import React from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faCalendarDays, faClock, faPlus, 
-  faMagnifyingGlass, faBell 
+  faMagnifyingGlass, faBell, faSignOutAlt
 } from '@fortawesome/free-solid-svg-icons';
 import profileImage from '../assets/photos/CUB4-Top-10-reasons-why-Chitkara-University-is-the-best-University-in-North-India.jpg';
 
-function Header() {
+function Header({ user, onLogout }) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    onLogout();
+    navigate('/auth');
+  };
+
   const navLinkClass = ({ isActive }) =>
     `font-medium transition-colors ${isActive ? 'text-purple-600' : 'text-gray-700 hover:text-purple-600'}`;
 
@@ -54,9 +61,21 @@ function Header() {
               </div>
             </div>
             
-            <Link to="/profile" className="w-10 h-10 rounded-lg overflow-hidden">
-              <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
-            </Link>
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <Link to="/profile" className="flex items-center space-x-2">
+                  <img src={profileImage} alt="Profile" className="w-10 h-10 rounded-lg object-cover" />
+                  <span className="font-medium text-gray-700">{user.name}</span>
+                </Link>
+                <button onClick={handleLogout} className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-all" title="Logout">
+                  <FontAwesomeIcon icon={faSignOutAlt} className="text-gray-600" />
+                </button>
+              </div>
+            ) : (
+              <Link to="/auth" className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg">
+                Login/Sign Up
+              </Link>
+            )}
           </div>
         </div>
       </div>
