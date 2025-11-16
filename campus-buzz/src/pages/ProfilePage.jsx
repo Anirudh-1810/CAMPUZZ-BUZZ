@@ -29,8 +29,21 @@ const RegisteredEventCard = ({ event }) => (
 function ProfilePage() {
   const [myEvents, setMyEvents] = useState([]);
   const [user, setUser] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [images, setImages] = useState([]);
 
-  // Load user info and registered events from localStorage when page loads
+  const fetchImages = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/images');
+      if (response.ok) {
+        const data = await response.json();
+        setImages(data);
+      }
+    } catch (error) {
+      console.error('Error fetching images:', error);
+    }
+  };
+
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('campusbuzz_user'));
     if (storedUser) {
@@ -39,7 +52,37 @@ function ProfilePage() {
     
     const storedEvents = JSON.parse(localStorage.getItem('myEvents')) || [];
     setMyEvents(storedEvents);
-  }, []); // Empty array means this runs only once
+    fetchImages();
+  }, []);
+
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/images', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: user.id,
+            src: reader.result,
+          }),
+        });
+        if (response.ok) {
+          fetchImages();
+        }
+      } catch (error) {
+        console.error('Error uploading image:', error);
+      }
+    };
+    reader.readAsDataURL(selectedFile);
+  };
 
   if (!user) {
     return (
@@ -56,10 +99,28 @@ function ProfilePage() {
   // This is shown if the user IS logged in
   return (
     <div className="container mx-auto p-8 my-12">
-      <h1 className="text-4xl font-bold text-gray-800 mb-6">
-        Welcome, {user.name}!
-      </h1>
-      
+      <div className="flex items-center mb-6">
+        <img
+          src={user.profilePicture || 'https://via.placeholder.com/150'}
+          alt="Profile"
+          className="w-24 h-24 rounded-full mr-4"
+        />
+        <div>
+          <h1 className="text-4xl font-bold text-gray-800">
+            Welcome, {user.name}!
+          </h1>
+          <div className="mt-2">
+            <input type="file" onChange={handleFileChange} />
+            <button
+              onClick={handleUpload}
+              className="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium"
+            >
+              Upload
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Registered Events */}
         <div className="md:col-span-2">
@@ -83,6 +144,21 @@ function ProfilePage() {
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <p className="text-gray-600">(This feature is coming soon!)</p>
           </div>
+        </div>
+      </div>
+
+      {/* Image Gallery */}
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold text-gray-700 mb-4">My Images</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {images.map((image) => (
+            <img
+              key={image.id}
+              src={image.src}
+              alt={`Uploaded by ${user.name}`}
+              className="w-full h-auto rounded-lg"
+            />
+          ))}
         </div>
       </div>
     </div>

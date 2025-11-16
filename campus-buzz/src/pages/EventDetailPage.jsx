@@ -1,26 +1,65 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendar, faClock, faMapPin, faUsers, faTag } from '@fortawesome/free-solid-svg-icons';
 
 function EventDetailPage() {
   const { eventId } = useParams();
+  const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     // Fetch all events from localStorage
     const allEvents = JSON.parse(localStorage.getItem('eventsList')) || [];
     
     // Find the specific event by its ID
-    // Note: eventId from URL is a string, event.id is a number
     const foundEvent = allEvents.find(e => e.id.toString() === eventId);
     
     if (foundEvent) {
       setEvent(foundEvent);
+      // Check if user is already registered
+      const myEvents = JSON.parse(localStorage.getItem('myEvents')) || [];
+      if (myEvents.some(e => e.id === foundEvent.id)) {
+        setIsRegistered(true);
+      }
     }
     setIsLoading(false);
   }, [eventId]);
+
+  const handleRegister = async () => {
+    const user = JSON.parse(localStorage.getItem('campusbuzz_user'));
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    try {
+      const response = await fetch('http://localhost:3001/registrations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          eventId: event.id,
+        }),
+      });
+      if (response.ok) {
+        setIsRegistered(true);
+        setMessage('Successfully registered! A confirmation has been logged to the console.');
+        // SIMULATED: In a real application, you would send a confirmation email here.
+        console.log(
+          `Event registration confirmation sent to ${user.email} for event ${event.title}`
+        );
+      } else {
+        setMessage('Registration failed. Please try again.');
+      }
+    } catch (error) {
+      setMessage('An error occurred. Please try again later.');
+    }
+  };
 
   if (isLoading) {
     return <div className="text-center p-12">Loading event...</div>;
@@ -49,9 +88,20 @@ function EventDetailPage() {
               </span>
               <h1 className="text-4xl font-bold text-gray-800 mt-4 mb-2">{event.title}</h1>
             </div>
-            <button className={`px-8 py-3 bg-${event.buttonColor.split('-')[1]}-500 text-white rounded-lg font-semibold hover:opacity-90 transition-all`}>
-              Register for this Event
-            </button>
+            <div className="text-right">
+              <button
+                onClick={handleRegister}
+                disabled={isRegistered}
+                className={`px-8 py-3 text-white rounded-lg font-semibold transition-all ${
+                  isRegistered
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : `bg-${event.buttonColor.split('-')[1]}-500 hover:opacity-90`
+                }`}
+              >
+                {isRegistered ? 'Registered' : 'Register for this Event'}
+              </button>
+              {message && <p className="mt-2 text-sm text-green-600">{message}</p>}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 my-8 border-y py-6">
